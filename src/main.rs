@@ -22,7 +22,7 @@ fn main() {
     
     
     file.write_all(x.as_bytes());
-
-    println!("{}", ConvertToIndex::get_document_contents("firstDoc.txt"))
+    println!("{:#?}", ConvertToIndex::count_occurances(&buffer, ConvertToIndex::convert(&buffer)));
+    // println!("{}", ConvertToIndex::get_docucoument_contents("firstDoc.txt"))
 
 }
