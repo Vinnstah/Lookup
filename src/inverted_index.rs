@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, io::Error};
+use std::{collections::{HashMap, HashSet}, io::Error, borrow::BorrowMut};
 use serde::{Serialize, Deserialize};
 use std::fs::File;
 use std::io::{Write, Read};
@@ -7,7 +7,7 @@ use std::env;
 use std::fs;
 
 #[derive(Serialize, Deserialize)]
-struct InvertedIndex {
+pub struct InvertedIndex {
     occurance: HashMap<String, u32>,
     words: HashMap<String, u32>
 }
@@ -17,7 +17,6 @@ pub enum Crawler {
 }
 
 pub enum ConvertToIndex {
-    
 }
 
 impl ConvertToIndex {
@@ -52,14 +51,90 @@ impl ConvertToIndex {
         if !current_dir.as_path().exists() {
             fs::create_dir("data")?;
         }
-
         current_dir.push(title.to_string() + ".txt");
-        let result = File::create(current_dir);
+        let mut file = File::create(current_dir).expect("Failed to create file");
         let encoded_content = bincode::serialize(input).expect("Failed to serialize bincode");
-        match result {
-            Ok(mut file) => file.write_all(&encoded_content),
-            Err(err) => Err(err)
+        
+        file.write_all(&encoded_content)
+    }
+
+    pub fn read_occurances() -> HashMap<String, Vec<(String, usize)>> {
+        let mut current_dir: std::path::PathBuf = env::current_dir().expect("Couldn't work out the current directory");
+        current_dir.push("occurances.txt");
+        let mut file = File::open(current_dir).expect("Failed to open file ");
+        let mut data = vec![];
+
+        file.read_to_end(&mut data).expect("Failed to read contents of file");
+
+        let res = bincode::deserialize(&data);
+
+        match res {
+            Ok(result) => result,
+            Err(_) => HashMap::new()
         }
+    }
+
+    pub fn save_occurances(data: HashMap<String, Vec<(String, usize)>>) -> Result<(), Error> {
+        let mut current_dir: std::path::PathBuf = env::current_dir().expect("Couldn't work out the current directory");
+        current_dir.push("occurances.txt");
+        let mut file = File::create(current_dir).expect("Failed to open file ");
+
+        let encoded_content = bincode::serialize(&data).expect("Failed to serialize bincode");
+        file.write_all(&encoded_content)
+    }
+
+    pub fn handle_occurances(mut input: HashMap<String, usize>, title: &str) -> Result<(), Error> {
+        let mut current_dir: std::path::PathBuf = env::current_dir().expect("Couldn't work out the current directory");
+        current_dir.push("data");
+
+        if !current_dir.as_path().exists() {
+            fs::create_dir("data")?;
+        }
+        // First string is word, second is title, usize is occurance
+        // let mut occurance_map: HashMap<String, (String, usize)> = HashMap::new();
+
+        let mut occurances = ConvertToIndex::read_occurances();
+
+        input
+        .iter()
+        .for_each(|occurance| {
+            if occurances.contains_key(occurance.0) {
+                occurances.get_mut(occurance.0).unwrap().push((title.to_string(), *occurance.1)); 
+                // .unwrap().1.push((title.to_string(), *occurance.1));
+                // occurances.insert(occurance.0.to_string(), (title.to_string(), *occurance.1));
+                // occurance.1 = &(title.to_string(), *input.get_key_value(occurance.0).unwrap().1);
+            } else {
+                occurances.insert(occurance.0.to_string(), vec![(title.to_string(), *occurance.1)]);
+            }
+        });
+
+        println!("{:#?}", occurances);
+
+        ConvertToIndex::save_occurances(occurances).expect("Failed to save occurances to file 2");
+        // occurances
+        // .iter()
+        // .map(|occurance: (&String, &(String, usize))| {
+        //     if input.contains_key(occurance.0) {
+        //         occurance.1 = &(title.to_string(), *input.get_key_value(occurance.0).unwrap().1);
+        //     } else {
+                
+        //     }
+
+        // });
+
+        // occurance_map.keys().map(|mut key| {
+        //     input.keys().for_each(|k| {
+        //         key = k;
+        //     })
+
+        // } )
+        // ;
+        // occurance_map.values().map(|x| {
+        //     input.get_key_value(k) .contains_key(k) if x.0 == 
+        // })
+        Ok(())
+
+
     }
 
 

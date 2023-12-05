@@ -1,95 +1,10 @@
-// use futures::StreamExt;
-// use reqwest::Url;
-// use voyager::scraper::Selector;
-// use voyager::{Collector, Crawler, CrawlerConfig, Response, Scraper};
-// use anyhow::Result;
-
-// pub struct RustLang {
-//     title_selector: Selector,
-//     body_selector: Selector,
-//     base_url: Url
-// }
-
-// impl Default for RustLang {
-//     fn default() -> Self {
-//         Self {
-//             title_selector: Selector::parse("a.header").unwrap(),
-//             // body_selector: Selector::parse("div#content main").unwrap(),
-//             body_selector: Selector::parse("#content > main").unwrap(),
-//             base_url: Url::parse("https://doc.rust-lang.org/rust-by-example/").unwrap(),
-//         }
-//     }
-// }
-
-// #[derive(Debug)]
-// enum MainContent {
-//     Paragraph(Selector),
-//     Code(Selector),
-//     H3(Selector),
-//     BlockQuote(Selector)
-// }
-
-// #[derive(Debug)]
-// pub enum RustLangState {
-//     Content(Content),
-// }
-
-// #[derive(Debug)]
-// pub struct Content {
-//     text: String
-// }
-
-// impl Scraper for RustLang {
-//     type Output = Content;
-//     type State = RustLangState;
-
-//     fn scrape(
-//         &mut self,
-//         response: Response<Self::State>,
-//         crawler: &mut Crawler<Self>,
-//     ) -> Result<Option<Self::Output>> {
-//         let html = response.html();
-
-//         if let Some(state) = response.state {
-//             match state {
-//                 RustLangState::Content { .. } => {
-//                     for (idx, el) in html.select(&self.body_selector).enumerate() {
-//                         let val = el.value();
-
-//                         let title = html
-//                         .select(&self.title_selector)
-//                         .map(|el| el.inner_html())
-//                         .next();
-
-//                         println!("{:#?}", title);
-//                         let entry_id = val.attr("main");
-
-//                         let content = Content {
-//                             text: String::from(el.inner_html())
-//                         };
-
-//                         crawler.visit_with_state(self.base_url.clone(), state);
-//                         return Ok(Some(content));
-//                     }
-//                 }
-//             }
-//         }
-//         Ok(None)
-//     }
-    
-// }
-
-use std::{ops::Deref};
-use futures::{TryFutureExt, FutureExt};
 use reqwest::{self, Url, Client};
 use scraper::{self, Selector, Html};
-use async_recursion::async_recursion;
-
+use crate::inverted_index::ConvertToIndex;
 pub struct RustLang {
     title_selector: Selector,
     body_selector: Selector,
     next_selector: Selector,
-    base_url: Url
 }
 
 impl Default for RustLang {
@@ -98,10 +13,10 @@ impl Default for RustLang {
             title_selector: Selector::parse("a.header").unwrap(),
             body_selector: Selector::parse("#content > main ").unwrap(),
             next_selector: Selector::parse("#content > nav > a.mobile-nav-chapters.next").unwrap(),
-            base_url: Url::parse("https://doc.rust-lang.org/rust-by-example/").unwrap(),
         }
     }
 }
+
 #[derive(Debug)]
 pub struct ScrapeResponse {
     pub title: String,
@@ -147,7 +62,7 @@ impl RequestClient {
             title.push(temp_title_list[0]);
         });
 
-        scrape_response.title = title.first().unwrap_or(&"default").to_string();
+        scrape_response.title = title.first().unwrap_or(&"default").to_string().replace("/", "-");
         let mut body_text: Vec<&str> = vec![];
 
         document.select(&RustLang::default().body_selector).for_each(|element| {
@@ -158,24 +73,28 @@ impl RequestClient {
         scrape_response.body = body_text.join(" ");
         for link in document.select(&RustLang::default().next_selector) {
             if let Some(href) = link.value().attr("href") {
-                println!("href: {}", href);
                 scrape_response.next_url = href.to_string();
             } else {
                 println!("No more pages, ending loop");
                 return None
             }
         }
-        let mut temp_removable_stirng = String::new();
-        for (char) in scrape_response.next_url.clone().chars() {
-            println!(" char {}", char);
-            if char == '.' {
-                temp_removable_stirng.push(char);
-            } else if char == '/' {
-                temp_removable_stirng.push(char);
+
+        let hash_set = ConvertToIndex::convert(&scrape_response.body);
+        let occurances = ConvertToIndex::count_occurances(&scrape_response.body, hash_set);
+
+        ConvertToIndex::handle_occurances(occurances, &scrape_response.title).expect("Failed to save occurances to file");
+
+        println!("title {}", &scrape_response.title);
+        ConvertToIndex::save(&scrape_response.body, &scrape_response.title).expect("Failed to save scraped site");
+
+        let mut prefix = String::new();
+        for char in scrape_response.next_url.clone().chars() {
+            if char == '.' || char == '/' {
+                prefix.push(char);
             } else { break }
         }
-        scrape_response.next_url = scrape_response.next_url.strip_prefix(&temp_removable_stirng).expect("Unable to strip prefix").to_string();
-        println!("NExt URL: {:#?}", scrape_response.next_url);
+        scrape_response.next_url = scrape_response.next_url.strip_prefix(&prefix).expect("Unable to strip prefix").to_string();
         let url = "https://doc.rust-lang.org/rust-by-example/".to_owned() + &scrape_response.next_url;
         return Some(url)
     }

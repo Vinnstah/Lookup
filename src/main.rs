@@ -1,11 +1,9 @@
 use std::{io::{stdin, stdout, Write}, ops::Add};
-use lookup::{inverted_index::ConvertToIndex};
+use lookup::{inverted_index::ConvertToIndex, search::Search};
 use lookup::scraper::RequestClient;
+use lookup::search;
 use std::fs::File;
-use voyager::Collector;
 use tokio::{self, time::Sleep};
-use voyager::CrawlerConfig;
-use futures::{stream::StreamExt, future::join};
 use reqwest::Url;
 use std::process::Command;
 use tokio::time::Duration;
@@ -16,15 +14,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let client = RequestClient::new();
 
-    print!("HERE");
-    let mut base_url = "";
-    let mut res = client.scrape("https://doc.rust-lang.org/rust-by-example/").await;
-    loop {
-        println!("Result {:#?}", res);
-        let mut base_url = &res.unwrap();
-        res = client.scrape(base_url).await;
-        sleep(Duration::from_millis(1000)).await;
-    }
+    println!("{:#?}", Search::search_for("test"));
+    // SAVE THIS CODE
+    // let mut base_url = "";
+    // let mut res = client.scrape("https://doc.rust-lang.org/rust-by-example/").await;
+    // loop {
+    //     println!("Result {:#?}", res);
+    //     let base_url = &res.unwrap();
+    //     res = client.scrape(base_url).await;
+    // }
+
+
     
     // let mut list_dir = Command::new("open");
     // list_dir.arg("https://doc.rust-lang.org/rust-by-example/hello.html").spawn().expect("process failed to execute");
