@@ -1,4 +1,4 @@
-use reqwest::{self, Url, Client};
+use reqwest::{self, Client};
 use scraper::{self, Selector, Html};
 use crate::inverted_index::ConvertToIndex;
 pub struct RustLang {
@@ -57,15 +57,23 @@ impl RequestClient {
 
         let mut title: Vec<&str> = vec![];
 
-        document.select(&RustLang::default().title_selector).by_ref().for_each(|temp_title| {
+        document
+        .select(&RustLang::default().title_selector)
+        .for_each(|temp_title| {
             let temp_title_list: Vec<&str> = temp_title.text().collect();
             title.push(temp_title_list[0]);
         });
 
-        scrape_response.title = title.first().unwrap_or(&"default").to_string().replace("/", "-");
+        scrape_response.title = title
+        .first()
+        .unwrap_or(&"default")
+        .to_string()
+        .replace("/", "-");
         let mut body_text: Vec<&str> = vec![];
 
-        document.select(&RustLang::default().body_selector).for_each(|element| {
+        document
+        .select(&RustLang::default().body_selector)
+        .for_each(|element| {
             let mut temp_body_list: Vec<&str> = element.text().collect();
             body_text.append(&mut temp_body_list);
         });
@@ -99,3 +107,15 @@ impl RequestClient {
         return Some(url)
     }
 }
+
+    // SAVE THIS CODE
+    // let mut base_url = "";
+    // let mut res = client.scrape("https://doc.rust-lang.org/rust-by-example/").await;
+    // loop {
+    //     println!("Result {:#?}", res);
+    //     let base_url = &res.unwrap();
+    //     res = client.scrape(base_url).await;
+    //     if base_url == "https://doc.rust-lang.org/rust-by-example/meta/playground.html" || base_url == "" {
+    //         break;
+    //     }
+    // }
