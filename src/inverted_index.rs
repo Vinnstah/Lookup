@@ -83,15 +83,13 @@ impl ConvertToIndex {
         file.write_all(&encoded_content)
     }
 
-    pub fn handle_occurances(mut input: HashMap<String, usize>, title: &str) -> Result<(), Error> {
+    pub fn handle_occurances(mut input: HashMap<String, usize>, url: &str) -> Result<(), Error> {
         let mut current_dir: std::path::PathBuf = env::current_dir().expect("Couldn't work out the current directory");
         current_dir.push("data");
 
         if !current_dir.as_path().exists() {
             fs::create_dir("data")?;
         }
-        // First string is word, second is title, usize is occurance
-        // let mut occurance_map: HashMap<String, (String, usize)> = HashMap::new();
 
         let mut occurances = ConvertToIndex::read_occurances();
 
@@ -99,12 +97,9 @@ impl ConvertToIndex {
         .iter()
         .for_each(|occurance| {
             if occurances.contains_key(occurance.0) {
-                occurances.get_mut(occurance.0).unwrap().push((title.to_string(), *occurance.1)); 
-                // .unwrap().1.push((title.to_string(), *occurance.1));
-                // occurances.insert(occurance.0.to_string(), (title.to_string(), *occurance.1));
-                // occurance.1 = &(title.to_string(), *input.get_key_value(occurance.0).unwrap().1);
+                occurances.get_mut(occurance.0).unwrap().push((url.to_string(), *occurance.1)); 
             } else {
-                occurances.insert(occurance.0.to_string(), vec![(title.to_string(), *occurance.1)]);
+                occurances.insert(occurance.0.to_string(), vec![(url.to_string(), *occurance.1)]);
             }
         });
 

@@ -2,19 +2,31 @@ use std::{io::{stdin, stdout, Write}, ops::Add};
 use lookup::{inverted_index::ConvertToIndex, search::Search};
 use lookup::scraper::RequestClient;
 use lookup::search;
-use std::fs::File;
 use tokio::{self, time::Sleep};
-use reqwest::Url;
 use std::process::Command;
-use tokio::time::Duration;
-use tokio::time::sleep;
+use clap::Parser;
+
+#[derive(Parser)]
+struct Cli {
+    search_word: String
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
-    let client = RequestClient::new();
-
-    println!("{:#?}", Search::search_for("test"));
+    let args = Cli::parse();
+    
+    // let client = RequestClient::new();
+    
+    // let mut buffer = String::new();
+    // println!("What do you wish to search for?");
+    // stdin().read_line(&mut buffer).expect("Unable to read string");
+    // println!("{}", buffer);
+    let search_result_url = Search::search_for(&args.search_word);
+    println!("{}", search_result_url);
+    let mut list_dir = Command::new("open");
+    list_dir.arg(search_result_url).spawn().expect("process failed to execute");
+    // println!("{:#?}", Search::search_for("play"));
     // SAVE THIS CODE
     // let mut base_url = "";
     // let mut res = client.scrape("https://doc.rust-lang.org/rust-by-example/").await;
@@ -22,12 +34,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //     println!("Result {:#?}", res);
     //     let base_url = &res.unwrap();
     //     res = client.scrape(base_url).await;
+    //     if base_url == "https://doc.rust-lang.org/rust-by-example/meta/playground.html" || base_url == "" {
+    //         break;
+    //     }
     // }
 
 
     
-    // let mut list_dir = Command::new("open");
-    // list_dir.arg("https://doc.rust-lang.org/rust-by-example/hello.html").spawn().expect("process failed to execute");
 
 // Execute `ls` in the current directory of the program.
     // Command::new("iterm2")
@@ -50,9 +63,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 Ok(())
 
 
-    // let mut buffer = String::new();
-    // println!("What do you wish to search for?");
-    // stdin().read_line(&mut buffer).expect("Unable to read string");
 
     // ConvertToIndex::save(&buffer, "firstDoc").expect("Failed to save to file");
 

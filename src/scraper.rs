@@ -83,7 +83,7 @@ impl RequestClient {
         let hash_set = ConvertToIndex::convert(&scrape_response.body);
         let occurances = ConvertToIndex::count_occurances(&scrape_response.body, hash_set);
 
-        ConvertToIndex::handle_occurances(occurances, &scrape_response.title).expect("Failed to save occurances to file");
+        ConvertToIndex::handle_occurances(occurances, &url).expect("Failed to save occurances to file");
 
         println!("title {}", &scrape_response.title);
         ConvertToIndex::save(&scrape_response.body, &scrape_response.title).expect("Failed to save scraped site");
