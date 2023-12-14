@@ -24,10 +24,6 @@ pub struct ScrapeResponse {
     pub next_url: String,
 }
 
-unsafe impl Send for ScrapeResponse {}
-unsafe impl Send for RequestClient {}
-unsafe impl Sync for ScrapeResponse {}
-
 impl ScrapeResponse {
     pub fn new() -> Self {
         Self {
@@ -100,7 +96,6 @@ impl RequestClient {
         ConvertToIndex::handle_occurances(occurances, &url)
             .expect("Failed to save occurances to file");
 
-        println!("title {}", &scrape_response.title);
         ConvertToIndex::save(&scrape_response.body, &scrape_response.title)
             .expect("Failed to save scraped site");
 
@@ -112,6 +107,7 @@ impl RequestClient {
                 break;
             }
         }
+        println!("{:#?}", &scrape_response.title);
         scrape_response.next_url = scrape_response
             .next_url
             .strip_prefix(&prefix)
@@ -121,16 +117,20 @@ impl RequestClient {
             "https://doc.rust-lang.org/rust-by-example/".to_owned() + &scrape_response.next_url;
         return Some(url);
     }
-}
 
-// SAVE THIS CODE
-// let mut base_url = "";
-// let mut res = client.scrape("https://doc.rust-lang.org/rust-by-example/").await;
-// loop {
-//     println!("Result {:#?}", res);
-//     let base_url = &res.unwrap();
-//     res = client.scrape(base_url).await;
-//     if base_url == "https://doc.rust-lang.org/rust-by-example/meta/playground.html" || base_url == "" {
-//         break;
-//     }
-// }
+    pub async fn run_scrape(&self) {
+        println!("HERE");
+        let mut res = self
+            .scrape("https://doc.rust-lang.org/rust-by-example/")
+            .await;
+        loop {
+            let base_url = &res.unwrap();
+            res = self.scrape(base_url).await;
+            if base_url == "https://doc.rust-lang.org/rust-by-example/meta/playground.html"
+                || base_url == ""
+            {
+                break;
+            }
+        }
+    }
+}

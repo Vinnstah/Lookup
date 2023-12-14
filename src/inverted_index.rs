@@ -1,11 +1,9 @@
 use crate::stop_words;
-use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::{
-    borrow::BorrowMut,
     collections::{HashMap, HashSet},
     io::Error,
 };
@@ -78,7 +76,7 @@ impl ConvertToIndex {
         file.write_all(&encoded_content)
     }
 
-    pub fn handle_occurances(mut input: HashMap<String, usize>, url: &str) -> Result<(), Error> {
+    pub fn handle_occurances(input: HashMap<String, usize>, url: &str) -> Result<(), Error> {
         let mut current_dir: std::path::PathBuf =
             env::current_dir().expect("Couldn't work out the current directory");
         current_dir.push("data");
@@ -102,8 +100,6 @@ impl ConvertToIndex {
                 );
             }
         });
-
-        println!("{:#?}", occurances);
 
         ConvertToIndex::save_occurances(occurances).expect("Failed to save occurances to file");
 

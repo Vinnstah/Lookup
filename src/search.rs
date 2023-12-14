@@ -1,5 +1,4 @@
 use bincode;
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
@@ -23,9 +22,12 @@ impl Search {
 
         let decoded: HashMap<String, Vec<(String, usize)>> =
             bincode::deserialize(&data).expect("Failed to deserialize Bincode data");
-            println!("{:#?}", decoded);
-        let mut ocurrance: Option<&Vec<(String, usize)>>;
-       let filtered_list: HashMap<_, _> = decoded.iter().filter(|dec_word| dec_word.0.contains(word)).collect();
+        let ocurrance: Option<&Vec<(String, usize)>>;
+
+        let filtered_list: HashMap<_, _> = decoded
+            .iter()
+            .filter(|dec_word| dec_word.0.contains(word))
+            .collect();
         if filtered_list.contains_key(&word.to_string()) {
             ocurrance = filtered_list.get(&word.to_string()).copied();
         } else {
@@ -38,7 +40,6 @@ impl Search {
         // }
         let mut res: Vec<(std::string::String, usize)> = ocurrance.unwrap().to_owned();
         res.sort_by(|a, b| b.1.cmp(&a.1));
-        println!("{:#?}", res);
         return res.first().unwrap().0.to_owned();
     }
 }
