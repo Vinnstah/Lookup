@@ -1,6 +1,7 @@
 use clap::Parser;
 use lookup::{scraper::scraper::RequestClient, search::Search};
 use std::process::Command;
+use std::env::current_exe;
 
 #[derive(Parser)]
 struct Cli {
@@ -11,9 +12,9 @@ struct Cli {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::parse();
-
+    
     if &args.search_word.clone().unwrap() == "scrape" {
-        println!("HERE 1");
+        println!("Scraping in progress...");
         let client = RequestClient::new();
         let _ = client.run_scrape().await;
     } else {

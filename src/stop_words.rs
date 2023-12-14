@@ -1,4 +1,4 @@
-pub const STOP_WORDS: [&str; 1157] = [
+pub const STOP_WORDS: [&str; 1154] = [
     "0o",
     "0s",
     "3a",
@@ -322,7 +322,6 @@ pub const STOP_WORDS: [&str; 1157] = [
     "fix",
     "fj",
     "fl",
-    "fn",
     "fo",
     "followed",
     "following",
@@ -520,7 +519,6 @@ pub const STOP_WORDS: [&str; 1157] = [
     "les",
     "less",
     "lest",
-    "let",
     "lets",
     "let's",
     "lf",
@@ -1082,7 +1080,6 @@ pub const STOP_WORDS: [&str; 1157] = [
     "wherever",
     "whether",
     "which",
-    "while",
     "whim",
     "whither",
     "who",

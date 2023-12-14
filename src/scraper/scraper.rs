@@ -1,6 +1,7 @@
-use crate::inverted_index::ConvertToIndex;
+use crate::inverted_index::Indexer;
 use reqwest::{self, Client};
 use scraper::{self, Html, Selector};
+
 pub struct RustLang {
     title_selector: Selector,
     body_selector: Selector,
@@ -33,7 +34,6 @@ impl ScrapeResponse {
         }
     }
 }
-
 pub struct RequestClient {
     client: Client,
 }
@@ -90,13 +90,13 @@ impl RequestClient {
             }
         }
 
-        let hash_set = ConvertToIndex::convert(&scrape_response.body);
-        let occurances = ConvertToIndex::count_occurances(&scrape_response.body, hash_set);
+        let hash_set = Indexer::convert(&scrape_response.body);
+        let occurances = Indexer::count_occurances(&scrape_response.body, hash_set);
 
-        ConvertToIndex::handle_occurances(occurances, &url)
+        Indexer::handle_occurances(occurances, &url)
             .expect("Failed to save occurances to file");
 
-        ConvertToIndex::save(&scrape_response.body, &scrape_response.title)
+        Indexer::save(&scrape_response.body, &scrape_response.title)
             .expect("Failed to save scraped site");
 
         let mut prefix = String::new();
@@ -119,7 +119,6 @@ impl RequestClient {
     }
 
     pub async fn run_scrape(&self) {
-        println!("HERE");
         let mut res = self
             .scrape("https://doc.rust-lang.org/rust-by-example/")
             .await;
@@ -129,6 +128,7 @@ impl RequestClient {
             if base_url == "https://doc.rust-lang.org/rust-by-example/meta/playground.html"
                 || base_url == ""
             {
+                println!("Scraping done.");
                 break;
             }
         }

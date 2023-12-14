@@ -5,7 +5,6 @@ use std::fs::File;
 use std::io::Read;
 
 pub enum Search {
-    Input(Input),
 }
 
 impl Search {
@@ -26,21 +25,18 @@ impl Search {
 
         let filtered_list: HashMap<_, _> = decoded
             .iter()
-            .filter(|dec_word| dec_word.0.contains(word))
+            .filter(| dec_word| dec_word.0.contains(word))
             .collect();
+
         if filtered_list.contains_key(&word.to_string()) {
             ocurrance = filtered_list.get(&word.to_string()).copied();
         } else {
             return "No word found".to_string();
         }
-        // if decoded.contains_key(word) {
-        //     ocurrance = decoded.get(word);
-        // } else {
-        //     return "No word found".to_string();
-        // }
+
         let mut res: Vec<(std::string::String, usize)> = ocurrance.unwrap().to_owned();
         res.sort_by(|a, b| b.1.cmp(&a.1));
         return res.first().unwrap().0.to_owned();
     }
 }
-type Input = String;
+

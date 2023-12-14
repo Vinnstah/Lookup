@@ -8,9 +8,9 @@ use std::{
     io::Error,
 };
 
-pub enum ConvertToIndex {}
+pub enum Indexer {}
 
-impl ConvertToIndex {
+impl Indexer {
     pub fn count_occurances(content: &String, keys: HashSet<String>) -> HashMap<String, usize> {
         let mut occurance_map: HashMap<String, usize> = HashMap::new();
 
@@ -22,7 +22,7 @@ impl ConvertToIndex {
             occurance_map.insert(key, occurances_in_content);
         }
 
-        return occurance_map;
+        occurance_map
     }
 
     pub fn convert(input: &String) -> HashSet<String> {
@@ -85,7 +85,7 @@ impl ConvertToIndex {
             fs::create_dir("data")?;
         }
 
-        let mut occurances = ConvertToIndex::read_occurances();
+        let mut occurances = Indexer::read_occurances();
 
         input.iter().for_each(|occurance| {
             if occurances.contains_key(occurance.0) {
@@ -101,7 +101,7 @@ impl ConvertToIndex {
             }
         });
 
-        ConvertToIndex::save_occurances(occurances).expect("Failed to save occurances to file");
+        Indexer::save_occurances(occurances).expect("Failed to save occurances to file");
 
         Ok(())
     }
