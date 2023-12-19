@@ -1,19 +1,16 @@
+use crate::indexing::index_handler::get_current_dir;
 use bincode;
 use std::collections::HashMap;
-use std::env;
 use std::fs::File;
 use std::io::Read;
 
-pub enum Search {
-}
+pub enum Search {}
 
 impl Search {
     pub fn search_for(word: &str) -> String {
-        let mut current_dir: std::path::PathBuf =
-            env::current_dir().expect("Couldn't work out the current directory");
+        let mut current_dir: std::path::PathBuf = get_current_dir();
         current_dir.push("occurances.txt");
         let mut file = File::open(current_dir).expect("Failed to open file ");
-
         let mut data = vec![];
 
         file.read_to_end(&mut data)
@@ -25,7 +22,7 @@ impl Search {
 
         let filtered_list: HashMap<_, _> = decoded
             .iter()
-            .filter(| dec_word| dec_word.0.contains(word))
+            .filter(|dec_word| dec_word.0.contains(word))
             .collect();
 
         if filtered_list.contains_key(&word.to_string()) {
@@ -39,4 +36,3 @@ impl Search {
         return res.first().unwrap().0.to_owned();
     }
 }
-

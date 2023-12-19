@@ -1,4 +1,4 @@
-use crate::inverted_index::Indexer;
+use crate::indexing::index_handler::Indexer;
 use reqwest::{self, Client};
 use scraper::{self, Html, Selector};
 
@@ -93,8 +93,7 @@ impl RequestClient {
         let hash_set = Indexer::convert(&scrape_response.body);
         let occurances = Indexer::count_occurances(&scrape_response.body, hash_set);
 
-        Indexer::handle_occurances(occurances, &url)
-            .expect("Failed to save occurances to file");
+        Indexer::handle_occurances(occurances, &url).expect("Failed to save occurances to file");
 
         Indexer::save(&scrape_response.body, &scrape_response.title)
             .expect("Failed to save scraped site");

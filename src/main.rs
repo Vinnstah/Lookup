@@ -1,18 +1,16 @@
 use clap::Parser;
 use lookup::{scraper::scraper::RequestClient, search::Search};
 use std::process::Command;
-use std::env::current_exe;
 
 #[derive(Parser)]
 struct Cli {
     search_word: Option<String>,
-    scrape: Option<String>,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::parse();
-    
+
     if &args.search_word.clone().unwrap() == "scrape" {
         println!("Scraping in progress...");
         let client = RequestClient::new();
@@ -25,7 +23,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .spawn()
             .expect("process failed to execute");
     }
-
 
     Ok(())
 }

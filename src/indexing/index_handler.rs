@@ -3,6 +3,7 @@ use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
+use std::path::PathBuf;
 use std::{
     collections::{HashMap, HashSet},
     io::Error,
@@ -34,8 +35,7 @@ impl Indexer {
     }
 
     pub fn save(input: &String, title: &str) -> Result<(), Error> {
-        let mut current_dir: std::path::PathBuf =
-            env::current_dir().expect("Couldn't work out the current directory");
+        let mut current_dir: std::path::PathBuf = get_current_dir();
         current_dir.push("data");
 
         if !current_dir.as_path().exists() {
@@ -49,10 +49,15 @@ impl Indexer {
     }
 
     pub fn read_occurances() -> HashMap<String, Vec<(String, usize)>> {
-        let mut current_dir: std::path::PathBuf =
-            env::current_dir().expect("Couldn't work out the current directory");
+        let mut current_dir: std::path::PathBuf = get_current_dir();
         current_dir.push("occurances.txt");
-        let mut file = File::open(current_dir).expect("Failed to open file ");
+        let mut file = match File::open(&current_dir) {
+            Ok(file) => file,
+            Err(_) => {
+                File::create(&current_dir).expect("Failed to create file")
+            }
+        };
+
         let mut data = vec![];
 
         file.read_to_end(&mut data)
@@ -67,8 +72,7 @@ impl Indexer {
     }
 
     pub fn save_occurances(data: HashMap<String, Vec<(String, usize)>>) -> Result<(), Error> {
-        let mut current_dir: std::path::PathBuf =
-            env::current_dir().expect("Couldn't work out the current directory");
+        let mut current_dir: std::path::PathBuf = get_current_dir();
         current_dir.push("occurances.txt");
         let mut file = File::create(current_dir).expect("Failed to open file ");
 
@@ -77,12 +81,11 @@ impl Indexer {
     }
 
     pub fn handle_occurances(input: HashMap<String, usize>, url: &str) -> Result<(), Error> {
-        let mut current_dir: std::path::PathBuf =
-            env::current_dir().expect("Couldn't work out the current directory");
+        let mut current_dir: std::path::PathBuf = get_current_dir();
         current_dir.push("data");
 
         if !current_dir.as_path().exists() {
-            fs::create_dir("data")?;
+            fs::create_dir(current_dir)?;
         }
 
         let mut occurances = Indexer::read_occurances();
@@ -105,4 +108,13 @@ impl Indexer {
 
         Ok(())
     }
+}
+
+pub fn get_current_dir() -> PathBuf {
+    let mut current_dir: std::path::PathBuf =
+        env::current_exe().expect("Couldn't find the dir of the binary");
+    current_dir.pop();
+    current_dir.pop();
+    current_dir.pop();
+    current_dir
 }
