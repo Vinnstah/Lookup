@@ -14,7 +14,7 @@ pub enum Indexer {}
 impl Indexer {
     pub fn count_occurances(content: &String, keys: HashSet<String>) -> HashMap<String, usize> {
         let mut occurance_map: HashMap<String, usize> = HashMap::new();
-
+        
         for key in keys {
             if stop_words::STOP_WORDS.contains(&&key.as_str()) || key.len() == 1 {
                 continue;
