@@ -26,28 +26,6 @@ impl Indexer {
         occurance_map
     }
 
-    pub fn convert(input: &String) -> HashSet<String> {
-        input
-            .split_whitespace()
-            .into_iter()
-            .map(|word| word.to_lowercase().to_string())
-            .collect::<HashSet<_>>()
-    }
-
-    pub fn save(input: &String, title: &str) -> Result<(), Error> {
-        let mut current_dir: std::path::PathBuf = get_current_dir();
-        current_dir.push("data");
-
-        if !current_dir.as_path().exists() {
-            fs::create_dir("data")?;
-        }
-        current_dir.push(title.to_string() + ".txt");
-        let mut file = File::create(current_dir).expect("Failed to create file");
-        let encoded_content = bincode::serialize(input).expect("Failed to serialize bincode");
-
-        file.write_all(&encoded_content)
-    }
-
     pub fn read_occurances() -> HashMap<String, Vec<(String, usize)>> {
         let mut current_dir: std::path::PathBuf = get_current_dir();
         current_dir.push("occurances.txt");
@@ -108,6 +86,32 @@ impl Indexer {
 
         Ok(())
     }
+}
+
+impl Indexer {
+    pub fn convert(input: &String) -> HashSet<String> {
+        input
+            .split_whitespace()
+            .into_iter()
+            .map(|word| word.to_lowercase().to_string())
+            .collect::<HashSet<_>>()
+    }
+
+    pub fn save(input: &String, title: &str) -> Result<(), Error> {
+        let mut current_dir: std::path::PathBuf = get_current_dir();
+        current_dir.push("data");
+
+        if !current_dir.as_path().exists() {
+            fs::create_dir("data")?;
+        }
+        current_dir.push(title.to_string() + ".txt");
+        let mut file = File::create(current_dir).expect("Failed to create file");
+        let encoded_content = bincode::serialize(input).expect("Failed to serialize bincode");
+
+        file.write_all(&encoded_content)
+    }
+
+    
 }
 
 pub fn get_current_dir() -> PathBuf {
